@@ -1,6 +1,6 @@
 {
-    "name": "isubuquiz",
-    "short_name": "isubuquiz",
+    "name": "isubu_quiz",
+    "short_name": "isubu_quiz",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
