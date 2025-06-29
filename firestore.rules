@@ -1,0 +1,88 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users koleksiyonu - kullanıcılar kendi verilerini okuyup güncelleyebilir
+    match /users/{userId} {
+      // Kullanıcılar kendi dokümanlarını okuyup yazabilir
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Admin ve teacher diğer kullanıcıları okuyabilir
+      allow read: if request.auth != null &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'teacher']);
+
+      // SADECE ADMIN diğer kullanıcıları güncelleyebilir (rol değiştirme için)
+      allow update: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Tests koleksiyonu - test CRUD işlemleri
+    match /tests/{testId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'teacher']);
+      allow update, delete: if request.auth != null &&
+        (resource.data.createdBy == request.auth.uid ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+    }
+
+    // Courses koleksiyonu - ders sistemi kuralları
+    match /courses/{courseId} {
+      // Tüm kullanıcılar dersleri okuyabilir
+      allow read: if request.auth != null;
+
+      // Sadece admin ve teacher ders oluşturabilir
+      allow create: if request.auth != null &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'teacher']);
+
+      // Ders sahibi ve admin ders güncelleyebilir
+      allow update: if request.auth != null &&
+        (resource.data.instructorId == request.auth.uid ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+
+      // Ders sahibi akademisyen ve admin ders silebilir
+      allow delete: if request.auth != null &&
+        (resource.data.instructorId == request.auth.uid ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+    }
+
+    // Test Results koleksiyonu - test sonuçları
+    match /test_results/{resultId} {
+      allow read: if request.auth != null &&
+        (resource.data.userId == request.auth.uid ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'teacher']);
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'teacher'];
+    }
+
+    // Question Pools koleksiyonu - soru havuzu sistemi
+    match /question_pools/{questionId} {
+      // Giriş yapmış kullanıcılar soru havuzunu okuyabilir
+      allow read: if request.auth != null;
+
+      // Sadece admin ve teacher soru oluşturabilir
+      allow create: if request.auth != null &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'teacher']);
+
+      // Soruyu oluşturan kişi veya admin güncelleyebilir
+      allow update: if request.auth != null &&
+        (resource.data.createdBy == request.auth.uid ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+
+      // İstatistik güncellemesi için özel izin (test çözüldüğünde)
+      // Sadece usageCount ve avgPerformance alanları güncellenebilir
+      allow update: if request.auth != null &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usageCount', 'avgPerformance']) &&
+        request.resource.data.usageCount is number &&
+        request.resource.data.avgPerformance is number &&
+        request.resource.data.usageCount >= 0 &&
+        request.resource.data.avgPerformance >= 0.0 &&
+        request.resource.data.avgPerformance <= 1.0;
+
+      // Soruyu oluşturan kişi veya admin silebilir
+      allow delete: if request.auth != null &&
+        (resource.data.createdBy == request.auth.uid ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+    }
+  }
+}

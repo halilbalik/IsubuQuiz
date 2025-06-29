@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "812810418234",
+    "project_id": "soruapp-31e3d",
+    "storage_bucket": "soruapp-31e3d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:812810418234:android:f6e0bb68c5b627161e9d03",
+        "android_client_info": {
+          "package_name": "com.soruapp.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBaEZC3H4jKEOL6_gvg02PzQcqpEYXw8Ls"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
