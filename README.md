@@ -206,9 +206,6 @@ flutter test
    - `google-services.json` dosyasının doğru lokasyonda olduğundan emin olun
    - Firebase Console'da proje ayarlarını kontrol edin
 
-## 📞 İletişim
-
-Sorularınız için: l2212721046@isparta.edu.tr
 
 ## 📄 Lisans
 
